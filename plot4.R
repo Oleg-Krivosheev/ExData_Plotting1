@@ -1,19 +1,21 @@
 library(data.table)
 
 # reading data
-hpc.dt <- fread("household_power_consumption.txt", sep=";", na.strings="?", nrows=550000, header=TRUE,
+hpc.dt <- fread("household_power_consumption.txt", sep=";", na.strings="?", header=TRUE,
                  colClasses = c("character", "character",
                                 "numeric", "numeric", "numeric", "numeric", "numeric", "numeric", "numeric"))
 
+# gluing date and time, date as Date
 hpc.dt[, Time := as.character(paste(Date, Time))]
 hpc.dt[, Date := as.Date(Date, "%d/%m/%Y")]
 
-# select dates and a subset of a data
+# select date range and a subset of a data
 sel.dates <- as.Date(c("01/02/2007", "02/02/2007"), "%d/%m/%Y")
 sel.dt    <- subset(hpc.dt, Date %in% sel.dates)
 
 t <- as.POSIXlt(sel.dt$Time, tz="EST", format="%d/%m/%Y %H:%M:%S")
 
+# plotting
 png("plot4.png", width=480, height=480)
 
 # ok, set 2x2 plot matrix
@@ -23,7 +25,7 @@ par(mfrow=c(2,2))
 plot(t, sel.dt$Global_active_power,
         type="l",
         xlab="",
-        ylab="Global Active Power (kilowatts)", lwd=1)
+        ylab="Global Active Power", lwd=1)
 
 # plot 2
 plot(t, sel.dt$Voltage,
@@ -42,8 +44,7 @@ legend("topright", col=c("black", "red", "blue"),
 
 # plot 4
 plot(t, sel.dt$Global_reactive_power,
-     type="n", # don't need points really
+     type="l",
      xlab="datetime", ylab="Global_reactive_power")
-lines(t, sel.dt$Global_reactive_power)
 
 dev.off()
